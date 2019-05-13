@@ -14,9 +14,13 @@ var db *sql.DB
 
 func generate() {
 	connect()
-	tables := getAllTablename()
 	createMain()
 	createCon()
+	createConfig()
+	copyConfig()
+	createGitIgnore()
+	tables := getAllTablename()
+
 	var modelnames []string
 	var routes []Route
 	c := config.Database
@@ -89,15 +93,22 @@ func createStruct(database, table string) (string, []Query) {
 		var nullable string
 		rows.Scan(&colname, &colKey, &colType, &nullable)
 		field := helper.SnakeCaseToCamelCase(colname, true)
+		colType = stringifyType(colType)
 		if colname == "id" {
 			field = "ID"
 		} else {
-			queries = append(queries, Query{
-				Key:   colname,
-				Value: fake.DigitsN(10),
-			})
+			if colType == "string" {
+				queries = append(queries, Query{
+					Key:   colname,
+					Value: fake.FirstName(),
+				})
+			} else {
+				queries = append(queries, Query{
+					Key:   colname,
+					Value: fake.DigitsN(2),
+				})
+			}
 		}
-		colType = stringifyType(colType)
 		if colKey == "PRI" {
 			strStuct += fmt.Sprintf("\n\t %s %s `gorm:\"column:%s;primary_key\" form:\"%s;primary_key\" json:\"%s;primary_key\"`", field, colType, colname, colname, colname)
 		} else {

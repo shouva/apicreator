@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/icrowley/fake"
 	helper "github.com/shouva/dailyhelper"
 )
 
@@ -15,8 +14,8 @@ var col Collection
 
 func generatePostman(name string, items *[]Item) {
 	info := createInfo(name)
-	varHost := createVariable(fake.CreditCardNum(""), "host", "localhost:8080")
-	varID := createVariable(fake.CreditCardNum(""), "id", "1")
+	varHost := createVariable("1100e68c-e506-41f3-998b-d5c188e80c19", "host", "localhost:8080")
+	varID := createVariable("1100e68c-e506-41f3-998b-d5c188e80c20", "id", "1")
 	vars := []Variable{*varHost, *varID}
 	jsonCollection, _ := json.Marshal(createCollection(info, items, &vars))
 	// fmt.Println(string(jsonCollection))
@@ -54,7 +53,7 @@ func createInfo(name string) *Info {
 }
 func createVariable(id, key, value string) *Variable {
 	return &Variable{
-		ID:    "1100e68c-e506-41f3-998b-d5c188e80c19",
+		ID:    id,
 		Key:   key,
 		Value: value,
 	}
@@ -116,9 +115,9 @@ func createItems(name string, path string, queries *[]Query) (items *[]Item) {
 			Header: []string{},
 			Body:   Body{Mode: "raw", Raw: ""},
 			URL: URL{
-				Raw:   "{{host}}/" + path + "{{id}}",
+				Raw:   "{{host}}/" + path + "/{{id}}",
 				Host:  []string{"{{host}}"},
-				Path:  append(strings.Split(path, "/"), "/{{id}}"),
+				Path:  append(strings.Split(path, "/"), "{{id}}"),
 				Query: *queries,
 			},
 		},
@@ -131,9 +130,9 @@ func createItems(name string, path string, queries *[]Query) (items *[]Item) {
 			Header: []string{},
 			Body:   Body{Mode: "raw", Raw: ""},
 			URL: URL{
-				Raw:   "{{host}}/" + path + "{{id}}",
+				Raw:   "{{host}}/" + path + "/{{id}}",
 				Host:  []string{"{{host}}"},
-				Path:  append(strings.Split(path, "/"), "/{{id}}"),
+				Path:  append(strings.Split(path, "/"), "{{id}}"),
 				Query: []Query{},
 			},
 		},

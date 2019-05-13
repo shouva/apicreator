@@ -21,13 +21,6 @@ type Item struct {
 	Response []string `json:"response"`
 }
 
-// {
-// 	"id": "1100e68c-e506-41f3-998b-d5c188e80c19",
-// 	"key": "andon19_token",
-// 	"value": "",
-// 	"type": "string"
-// },
-
 // Variable :
 type Variable struct {
 	ID    string `json:"id"`

@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"os/exec"
 	"text/template"
 
 	helper "github.com/shouva/dailyhelper"
@@ -21,7 +20,10 @@ func createMain() string {
 	)
 	func main() {
 		// connect to db
-		g, _ = open("localhost", "3306", "testingsaja", "username", "password")
+		var config Config
+		dailyhelper.ReadConfig(dailyhelper.GetCurrentPath(false)+"/config.json", &config)
+		c_db := config.Database
+		g, _ = open(c_db.Host, c_db.Port, c_db.DBName, c_db.User, c_db.Password)
 		defer g.Close()
 		migrate(g)
 
@@ -60,14 +62,6 @@ func createMain() string {
 		return ""
 	}
 	f.Close()
-	out, err := exec.Command("goimports", filename).Output()
-	// out, err := exec.Command("date").Output()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	f, err = os.Create(filename)
-	f.Write(out)
-	f.Close()
+	completer(filename)
 	return ""
 }
