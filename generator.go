@@ -3,7 +3,9 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"strings"
+	"time"
 
 	"github.com/icrowley/fake"
 
@@ -13,6 +15,8 @@ import (
 var db *sql.DB
 
 func generate() {
+	start := time.Now()
+
 	connect()
 	createMain()
 	createCon()
@@ -26,6 +30,7 @@ func generate() {
 	c := config.Database
 	items := []Item{}
 	for _, tablename := range tables {
+
 		modelname := helper.SnakeCaseToCamelCase(helper.Singular(tablename), true)
 		prefix, queries := createStruct(c.DBName, tablename)
 		prefix = "package main\n" + prefix
@@ -42,6 +47,9 @@ func generate() {
 	createMigrations(modelnames)
 	createRoutes(routes)
 	generatePostman(c.DBName, &items)
+	fmt.Println(len(tables), "table * 5 endpoint API have generated!")
+	elapsed := time.Since(start)
+	log.Printf("Process take finished in %s", elapsed)
 }
 func connect() {
 	c := config.Database
