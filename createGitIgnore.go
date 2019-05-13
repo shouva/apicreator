@@ -8,14 +8,13 @@ import (
 )
 
 func createGitIgnore() {
-	str := `
-	*
-	!*.*
-	!/**/
-	*.exe
-	config.json
+	str := `*
+!*.*
+!/**/
+*.exe
+config.json
 	`
-	filename := helper.GetCurrentPath(false) + "/out/config.go"
+	filename := helper.GetCurrentPath(false) + "/out/.gitignore"
 	f, err := os.Create(filename)
 	defer f.Close()
 	if err != nil {
