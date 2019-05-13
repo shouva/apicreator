@@ -4,6 +4,6 @@
         "port": "3306",
         "dbname":"dbname",
         "username":"root",
-        "password":""
+        "password":"toor"
     }
 }
