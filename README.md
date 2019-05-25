@@ -8,7 +8,7 @@ We use gin, gorm, dailyhelper and postman.
   1. clone this project
   2. copy paste config-example.json to config.json.
   3. edit config.json
-  4. install dependency
-  5. create a out dir
+  4. install dependencies
+  5. create an out dir
   6. run it!
   7. you will have an api application
