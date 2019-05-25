@@ -53,7 +53,7 @@ func createAPI(modelname, objectname, urlstring, prefix string) string {
 	
 	func create{{.Modelname}}(c *gin.Context) {
 		var {{.Objectname}} {{.Modelname}}
-		c.Bind(&{{.Objectname}})
+		c.BindJSON(&{{.Objectname}})
 		g.Create(&{{.Objectname}})
 		c.JSON(200, {{.Objectname}})
 	}
@@ -65,7 +65,7 @@ func createAPI(modelname, objectname, urlstring, prefix string) string {
 			c.AbortWithStatus(404)
 			fmt.Println(err)
 		}
-		c.Bind(&{{.Objectname}})
+		c.BindJSON(&{{.Objectname}})
 		g.Save(&{{.Objectname}})
 		c.JSON(200, {{.Objectname}})
 	}
