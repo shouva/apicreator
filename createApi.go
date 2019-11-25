@@ -21,7 +21,7 @@ func createAPI(modelname, objectname, urlstring, prefix string) string {
 	{{.Prefix}}
 
 	// handler create
-	func initRouters{{.Modelname}}(r *gin.Engine, {{.Urlstring}} string) {
+	func initRouters{{.Modelname}}(r *gin.Engine, _{{.Urlstring}} string) {
 		route := r.Group("{{.Urlstring}}")
 		route.GET("/", get{{.Modelname}}s)
 		route.GET("/:id", get{{.Modelname}})
@@ -31,48 +31,48 @@ func createAPI(modelname, objectname, urlstring, prefix string) string {
 	}
 	
 	func get{{.Modelname}}s(c *gin.Context) {
-		var {{.Objectname}}s []{{.Modelname}}
-		if err := g.Find(&{{.Objectname}}s).Error; err != nil {
+		var _{{.Objectname}}s []{{.Modelname}}
+		if err := g.Find(&_{{.Objectname}}s).Error; err != nil {
 			c.AbortWithStatus(404)
 			fmt.Println(err)
 		} else {
-			c.JSON(200, {{.Objectname}}s)
+			c.JSON(200, _{{.Objectname}}s)
 		}
 	}
 	
 	func get{{.Modelname}}(c *gin.Context) {
 		id := c.Params.ByName("id")
-		var {{.Objectname}} {{.Modelname}}
-		if err := g.Where("id = ?", id).First(&{{.Objectname}}).Error; err != nil {
+		var _{{.Objectname}} {{.Modelname}}
+		if err := g.Where("id = ?", id).First(&_{{.Objectname}}).Error; err != nil {
 			c.AbortWithStatus(404)
 			fmt.Println(err)
 		} else {
-			c.JSON(200, {{.Objectname}})
+			c.JSON(200, _{{.Objectname}})
 		}
 	}
 	
 	func create{{.Modelname}}(c *gin.Context) {
-		var {{.Objectname}} {{.Modelname}}
-		c.BindJSON(&{{.Objectname}})
-		g.Create(&{{.Objectname}})
-		c.JSON(200, {{.Objectname}})
+		var _{{.Objectname}} {{.Modelname}}
+		c.BindJSON(&_{{.Objectname}})
+		g.Create(&_{{.Objectname}})
+		c.JSON(200, _{{.Objectname}})
 	}
 	
 	func update{{.Modelname}}(c *gin.Context) {
-		var {{.Objectname}} {{.Modelname}}
+		var _{{.Objectname}} {{.Modelname}}
 		id := c.Params.ByName("id")
-		if err := g.Where("id = ?", id).First(&{{.Objectname}}).Error; err != nil {
+		if err := g.Where("id = ?", id).First(&_{{.Objectname}}).Error; err != nil {
 			c.AbortWithStatus(404)
 			fmt.Println(err)
 		}
-		c.BindJSON(&{{.Objectname}})
-		g.Save(&{{.Objectname}})
-		c.JSON(200, {{.Objectname}})
+		c.BindJSON(&_{{.Objectname}})
+		g.Save(&_{{.Objectname}})
+		c.JSON(200, _{{.Objectname}})
 	}
 	func delete{{.Modelname}}(c *gin.Context) {
 		id := c.Params.ByName("id")
-		var {{.Objectname}} {{.Modelname}}
-		d := g.Where("id = ?", id).Delete(&{{.Objectname}})
+		var _{{.Objectname}} {{.Modelname}}
+		d := g.Where("id = ?", id).Delete(&_{{.Objectname}})
 		fmt.Println(d)
 		c.JSON(200, gin.H{"id #" + id: "deleted"})
 	}
