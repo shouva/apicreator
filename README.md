@@ -5,9 +5,7 @@ We use gin, gorm, dailyhelper and postman.
 
 ## How to use
 
-  1. go get github.com/shouva/apicreator
+  1. `go get github.com/shouva/apicreator`
   2. create config.json, look at config-example.json
-  3. run it
-  
-      `apicreator`
+  3. run it : `apicreator`
   
