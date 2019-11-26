@@ -4,8 +4,6 @@ import (
 	"log"
 	"os"
 	"text/template"
-
-	helper "github.com/shouva/dailyhelper"
 )
 
 // API struct
@@ -16,63 +14,63 @@ type API struct {
 	Prefix     string
 }
 
-func createAPI(modelname, objectname, urlstring, prefix string) string {
+func createAPI(tablename, modelname, objectname, urlstring string) string {
 	strtemplate := `
-	{{.Prefix}}
+	package handlers
 
-	// handler create
-	func initRouters{{.Modelname}}(r *gin.Engine, _{{.Urlstring}} string) {
+	// InitRouters{{.Modelname}} : 
+	func (h *Handler) InitRouters{{.Modelname}}(r *gin.Engine, {{.Objectname}} string) {
 		route := r.Group("{{.Urlstring}}")
-		route.GET("/", get{{.Modelname}}s)
-		route.GET("/:id", get{{.Modelname}})
-		route.POST("/", create{{.Modelname}})
-		route.PUT("/:id", update{{.Modelname}})
-		route.DELETE("/:id", delete{{.Modelname}})
+		route.GET("/", h.get{{.Modelname}}s)
+		route.GET("/:id", h.get{{.Modelname}})
+		route.POST("/", h.create{{.Modelname}})
+		route.PUT("/:id", h.update{{.Modelname}})
+		route.DELETE("/:id", h.delete{{.Modelname}})
 	}
 	
-	func get{{.Modelname}}s(c *gin.Context) {
-		var _{{.Objectname}}s []{{.Modelname}}
-		if err := g.Find(&_{{.Objectname}}s).Error; err != nil {
+	func (h *Handler) get{{.Modelname}}s(c *gin.Context) {
+		var {{.Objectname}}s []models.{{.Modelname}}
+		if err := h.db.Find(&{{.Objectname}}s).Error; err != nil {
 			c.AbortWithStatus(404)
 			fmt.Println(err)
 		} else {
-			c.JSON(200, _{{.Objectname}}s)
+			c.JSON(200, {{.Objectname}}s)
 		}
 	}
 	
-	func get{{.Modelname}}(c *gin.Context) {
+	func (h *Handler) get{{.Modelname}}(c *gin.Context) {
 		id := c.Params.ByName("id")
-		var _{{.Objectname}} {{.Modelname}}
-		if err := g.Where("id = ?", id).First(&_{{.Objectname}}).Error; err != nil {
+		var {{.Objectname}} models.{{.Modelname}}
+		if err := h.db.Where("id = ?", id).First(&{{.Objectname}}).Error; err != nil {
 			c.AbortWithStatus(404)
 			fmt.Println(err)
 		} else {
-			c.JSON(200, _{{.Objectname}})
+			c.JSON(200, {{.Objectname}})
 		}
 	}
 	
-	func create{{.Modelname}}(c *gin.Context) {
-		var _{{.Objectname}} {{.Modelname}}
-		c.BindJSON(&_{{.Objectname}})
-		g.Create(&_{{.Objectname}})
-		c.JSON(200, _{{.Objectname}})
+	func (h *Handler) create{{.Modelname}}(c *gin.Context) {
+		var {{.Objectname}} models.{{.Modelname}}
+		c.BindJSON(&{{.Objectname}})
+		h.db.Create(&{{.Objectname}})
+		c.JSON(200, {{.Objectname}})
 	}
 	
-	func update{{.Modelname}}(c *gin.Context) {
-		var _{{.Objectname}} {{.Modelname}}
+	func (h *Handler) update{{.Modelname}}(c *gin.Context) {
+		var {{.Objectname}} models.{{.Modelname}}
 		id := c.Params.ByName("id")
-		if err := g.Where("id = ?", id).First(&_{{.Objectname}}).Error; err != nil {
+		if err := h.db.Where("id = ?", id).First(&{{.Objectname}}).Error; err != nil {
 			c.AbortWithStatus(404)
 			fmt.Println(err)
 		}
-		c.BindJSON(&_{{.Objectname}})
-		g.Save(&_{{.Objectname}})
-		c.JSON(200, _{{.Objectname}})
+		c.BindJSON(&{{.Objectname}})
+		h.db.Save(&{{.Objectname}})
+		c.JSON(200, {{.Objectname}})
 	}
-	func delete{{.Modelname}}(c *gin.Context) {
+	func (h *Handler) delete{{.Modelname}}(c *gin.Context) {
 		id := c.Params.ByName("id")
-		var _{{.Objectname}} {{.Modelname}}
-		d := g.Where("id = ?", id).Delete(&_{{.Objectname}})
+		var {{.Objectname}} models.{{.Modelname}}
+		d := h.db.Where("id = ?", id).Delete(&{{.Objectname}})
 		fmt.Println(d)
 		c.JSON(200, gin.H{"id #" + id: "deleted"})
 	}
@@ -88,11 +86,10 @@ func createAPI(modelname, objectname, urlstring, prefix string) string {
 		Objectname: objectname,
 		Modelname:  modelname,
 		Urlstring:  urlstring,
-		Prefix:     prefix,
 	}
 
 	// openfile
-	filename := helper.GetCurrentPath(false) + "/out/" + modelname + ".go"
+	filename := folderhandler + "/" + urlstring + ".go"
 	f, err := os.Create(filename)
 	if err != nil {
 		log.Println("create file: ", err)

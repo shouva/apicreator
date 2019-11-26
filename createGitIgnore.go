@@ -3,8 +3,6 @@ package main
 import (
 	"log"
 	"os"
-
-	helper "github.com/shouva/dailyhelper"
 )
 
 func createGitIgnore() {
@@ -14,7 +12,7 @@ func createGitIgnore() {
 *.exe
 config.json
 	`
-	filename := helper.GetCurrentPath(false) + "/out/.gitignore"
+	filename := folder + "/.gitignore"
 	f, err := os.Create(filename)
 	defer f.Close()
 	if err != nil {

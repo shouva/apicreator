@@ -4,22 +4,42 @@ import (
 	"log"
 	"os"
 	"text/template"
-
-	helper "github.com/shouva/dailyhelper"
 )
 
 func createCon() string {
 	strtemplate := `
-	package main
+	package database
 
-	import "github.com/jinzhu/gorm"
+	import (
+		"fmt"
 	
-	var g *gorm.DB
+		"github.com/jinzhu/gorm"
+	)
 	
-	func open(host, port, dbname, username, password string) (oGorm *gorm.DB, err error) {
-		oGorm, err = gorm.Open("mysql", username+":"+password+"@tcp("+host+":"+port+")/"+dbname+"?charset=utf8&parseTime=True&loc=Local")
-		return
+	// Con : capsuling all
+	type Con struct {
+		*gorm.DB
 	}
+	
+	// Init : this called when someone call db
+	func (db *Con) Init() {
+		fmt.Println("init")
+	}
+	
+	// New :
+	func New(host, port, username, password, dbname string) (*Con, error) {
+		_db, err := gorm.Open("mysql", username+":"+password+"@tcp("+host+":"+port+")/"+dbname)
+		if err != nil {
+			return &Con{}, err
+		}
+		err = _db.DB().Ping()
+		if err != nil {
+			return nil, err
+		}
+		return &Con{
+			DB: _db,
+		}, nil
+	}	
 	`
 	tmpl := template.New("create api template")
 	tmpl, err := tmpl.Parse(strtemplate)
@@ -29,7 +49,7 @@ func createCon() string {
 	}
 
 	// openfile
-	filename := helper.GetCurrentPath(false) + "/out/con.go"
+	filename := folderdatabase + "/connection.go"
 	f, err := os.Create(filename)
 	defer f.Close()
 	if err != nil {

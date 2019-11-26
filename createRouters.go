@@ -4,8 +4,6 @@ import (
 	"log"
 	"os"
 	"text/template"
-
-	helper "github.com/shouva/dailyhelper"
 )
 
 // Route :
@@ -17,8 +15,8 @@ type Route struct {
 func createRoutes(models []Route) string {
 	strtemplate := `
 	package main
-	func loadrouter(rgin *gin.Engine) {
-		{{range $index, $route := .}}initRouters{{$route.Name}}(rgin, "{{$route.URL}}")
+	func combinerouter(r *gin.Engine, h *handlers.Handler) {
+		{{range $index, $route := .}}h.InitRouters{{$route.Name}}(r, "{{$route.URL}}")
 		{{end}}}
 	`
 	tmpl := template.New("create api template")
@@ -29,7 +27,7 @@ func createRoutes(models []Route) string {
 	}
 
 	// openfile
-	filename := helper.GetCurrentPath(false) + "/out/routes.go"
+	filename := folder + "/routes.go"
 	f, err := os.Create(filename)
 	if err != nil {
 		log.Println("create file: ", err)

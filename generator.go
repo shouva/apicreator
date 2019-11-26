@@ -23,33 +23,46 @@ func generate() {
 	createConfig()
 	copyConfig()
 	createGitIgnore()
+	// handler file harus di lengkapi setelah pembuatan seluruh model. :-)
+	createHandlerFile()
 	tables := getAllTablename()
 
 	var modelnames []string
 	var routes []Route
 	c := config.Database
 	items := []Item{}
+
 	for _, tablename := range tables {
 
 		modelname := helper.SnakeCaseToCamelCase(helper.Singular(tablename), true)
-		prefix, queries := createStruct(c.DBName, tablename)
-		prefix = "package main\n" + prefix
-		// fmt.Println(prefix)
+		tablemodelstring, queries := createStruct(c.DBName, tablename)
+		tablemodelstring = "package models\n" + tablemodelstring
 		objectname := helper.SnakeCaseToCamelCase(helper.Singular(tablename), false)
-		url := strings.ToLower(objectname)
+		fmt.Println(tablename, objectname)
 
-		createAPI(modelname, objectname, url, prefix)
+		url := strings.ToLower(objectname)
+		objectname = "_" + objectname
+		createModel(tablename, tablemodelstring)
+		createAPI(tablename, modelname, objectname, url)
 		modelnames = append(modelnames, modelname)
 		routes = append(routes, Route{Name: modelname, URL: url})
 		item := createItems(tablename, url, &queries)
 		items = append(items, *item...)
+
 	}
+	completer(folderhandler + "/handler.go")
+
 	createMigrations(modelnames)
 	createRoutes(routes)
 	generatePostman(c.DBName, &items)
 	fmt.Println(len(tables), "table * 5 endpoint API have generated!")
 	elapsed := time.Since(start)
 	log.Printf("Process take finished in %s", elapsed)
+}
+
+func createDir() {
+	fmt.Println("wow")
+	// config.Package
 }
 func connect() {
 	c := config.Database
@@ -79,7 +92,13 @@ func getAllTablename() []string {
 }
 
 func createStruct(database, table string) (string, []Query) {
-	query := "SELECT COLUMN_NAME, COLUMN_KEY, DATA_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND table_name = ?"
+	query := `SELECT 	COLUMN_NAME, 
+						COLUMN_KEY, 
+						DATA_TYPE, 
+						IS_NULLABLE 
+			FROM 		INFORMATION_SCHEMA.COLUMNS 
+			WHERE 		TABLE_SCHEMA = ? 
+			AND 		TABLE_NAME = ?`
 	rows, err := db.Query(query, database, table)
 	if err != nil {
 		fmt.Println("Error selecting from db: " + err.Error())
@@ -92,7 +111,8 @@ func createStruct(database, table string) (string, []Query) {
 	}
 	queries := []Query{}
 	structName := helper.SnakeCaseToCamelCase(helper.Singular(table), true)
-	strStuct := "\n// " + structName + " : "
+	strStuct := "package model "
+	strStuct = "\n// " + structName + " : "
 	strStuct += "\ntype " + structName + " struct {\n"
 	for rows.Next() {
 		var colname string

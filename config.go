@@ -3,6 +3,7 @@ package main
 // Config :
 type Config struct {
 	Database Database `json:"database"`
+	Package  string   `json:"package"`
 }
 
 // Database :

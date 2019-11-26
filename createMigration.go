@@ -4,15 +4,18 @@ import (
 	"log"
 	"os"
 	"text/template"
-
-	helper "github.com/shouva/dailyhelper"
 )
 
 func createMigrations(models []string) string {
+	type params struct {
+		Models  []string
+		Package string
+	}
 	strtemplate := `
 	package main
+	import "{{.Package}}/models"
 	func migrate(g *gorm.DB) {
-		{{range $index, $model := .}}g.AutoMigrate(&{{$model}}{})
+		{{range $index, $model := .Models}}g.AutoMigrate(&models.{{$model}}{})
 		{{end}}}
 	`
 	tmpl := template.New("create api template")
@@ -23,7 +26,7 @@ func createMigrations(models []string) string {
 	}
 
 	// openfile
-	filename := helper.GetCurrentPath(false) + "/out/migrations.go"
+	filename := folder + "/migrations.go"
 	f, err := os.Create(filename)
 	if err != nil {
 		log.Println("create file: ", err)
@@ -31,7 +34,10 @@ func createMigrations(models []string) string {
 	}
 
 	// var strout string
-	err = tmpl.Execute(f, models)
+	err = tmpl.Execute(f, params{
+		Models:  models,
+		Package: config.Package,
+	})
 
 	if err != nil {
 		log.Fatal("Execute: ", err)

@@ -26,7 +26,7 @@ func createConfig() {
 		DBName   string ` + "`" + `json:"dbname"` + "`" + `
 	}
 	`
-	filename := helper.GetCurrentPath(false) + "/out/config.go"
+	filename := folder + "/config.go"
 	f, err := os.Create(filename)
 	defer f.Close()
 	if err != nil {
@@ -39,7 +39,7 @@ func createConfig() {
 
 func copyConfig() {
 	sourceFile := helper.GetCurrentPath(false) + "/config.json"
-	destinationFile := helper.GetCurrentPath(false) + "/out/config.json"
+	destinationFile := folder + "/config.json"
 	input, err := ioutil.ReadFile(sourceFile)
 	if err != nil {
 		fmt.Println(err)

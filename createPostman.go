@@ -6,8 +6,6 @@ import (
 	"log"
 	"os"
 	"strings"
-
-	helper "github.com/shouva/dailyhelper"
 )
 
 var col Collection
@@ -20,7 +18,7 @@ func generatePostman(name string, items *[]Item) {
 	jsonCollection, _ := json.Marshal(createCollection(info, items, &vars))
 	// fmt.Println(string(jsonCollection))
 
-	filename := helper.GetCurrentPath(false) + "/out/" + name + ".postman_collection.json"
+	filename := folder + "/" + name + ".postman_collection.json"
 	f, err := os.Create(filename)
 	defer f.Close()
 	if err != nil {
