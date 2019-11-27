@@ -121,6 +121,7 @@ func createStruct(database, table string) (string, []Query) {
 		var nullable string
 		rows.Scan(&colname, &colKey, &colType, &nullable)
 		field := helper.SnakeCaseToCamelCase(colname, true)
+		field = helper.BeautySingularity(field)
 		colType = stringifyType(colType)
 		if colname == "id" {
 			field = "ID"
