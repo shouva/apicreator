@@ -19,10 +19,12 @@ func createAPI(tablename, modelname, objectname, urlstring string) string {
 	package handlers
 
 	// InitRouters{{.Modelname}} : 
-	func (h *Handler) InitRouters{{.Modelname}}(r *gin.Engine, {{.Objectname}} string) {
-		route := r.Group("{{.Urlstring}}")
+	func (h *Handler) InitRouters{{.Modelname}}(r *gin.RouterGroup, {{.Objectname}} string) {
+		route := r.Group("/" + {{.Objectname}})
+		route.GET("", h.get{{.Modelname}}s)
 		route.GET("/", h.get{{.Modelname}}s)
 		route.GET("/:id", h.get{{.Modelname}})
+		route.POST("", h.create{{.Modelname}})
 		route.POST("/", h.create{{.Modelname}})
 		route.PUT("/:id", h.update{{.Modelname}})
 		route.DELETE("/:id", h.delete{{.Modelname}})

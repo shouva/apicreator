@@ -15,7 +15,7 @@ type Route struct {
 func createRoutes(models []Route) string {
 	strtemplate := `
 	package main
-	func combinerouter(r *gin.Engine, h *handlers.Handler) {
+	func combinerouter(r *gin.RouterGroup, h *handlers.Handler) {
 		{{range $index, $route := .}}h.InitRouters{{$route.Name}}(r, "{{$route.URL}}")
 		{{end}}}
 	`

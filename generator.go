@@ -139,9 +139,9 @@ func createStruct(database, table string) (string, []Query) {
 			}
 		}
 		if colKey == "PRI" {
-			strStuct += fmt.Sprintf("\n\t %s %s `gorm:\"column:%s;primary_key\" form:\"%s;primary_key\" json:\"%s;primary_key\"`", field, colType, colname, colname, colname)
+			strStuct += fmt.Sprintf("\n\t %s %s `gorm:\"column:%s;primary_key\" form:\"%s;primary_key\" json:\"%s,omitempty;primary_key\"`", field, colType, colname, colname, colname)
 		} else {
-			strStuct += fmt.Sprintf("\n\t %s %s `gorm:\"column:%s\" form:\"%s\" json:\"%s\"`", field, colType, colname, colname, colname)
+			strStuct += fmt.Sprintf("\n\t %s %s `gorm:\"column:%s\" form:\"%s\" json:\"%s,omitempty\"`", field, colType, colname, colname, colname)
 
 		}
 	}
