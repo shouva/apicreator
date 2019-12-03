@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/icrowley/fake"
-
 	helper "github.com/shouva/dailyhelper"
 )
 
@@ -36,11 +34,11 @@ func generate() {
 	for _, tablename := range tables {
 
 		modelname := helper.SnakeCaseToCamelCase(helper.Singular(tablename), true)
-		tablemodelstring, queries := createStruct(c.DBName, tablename)
+
+		tablemodelstring, modelname, queries := createStruct(c.DBName, tablename)
 		tablemodelstring = "package models\n" + tablemodelstring
 		objectname := helper.SnakeCaseToCamelCase(helper.Singular(tablename), false)
-		fmt.Println(tablename, objectname)
-
+		objectname = helper.BeautySingularity(objectname)
 		url := strings.ToLower(objectname)
 		objectname = "_" + objectname
 		createModel(tablename, tablemodelstring)
@@ -101,18 +99,6 @@ func connectMSSQL() {
 	}
 }
 
-// c := config.Database
-// var err error
-// // constring := c.User + ":" + c.Password + "@tcp(" + c.Host + ":" + c.Port + ")/" + c.DBName + "?&parseTime=True"
-// port, _ := strconv.Atoi(c.Port)
-// connectionString := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%d;database=%s",
-// 	c.Host, c.User, c.Password, port, c.DBName)
-// fmt.Println(connectionString)
-// db, err = sql.Open("mssql", connectionString)
-// if err != nil {
-// 	panic(err.Error)
-// }
-
 const mySQL = "mysql"
 const msSQL = "mssql"
 
@@ -144,81 +130,6 @@ func getAllTablename() []string {
 	return tables
 }
 
-func createStruct(database, table string) (string, []Query) {
-	var query string
-	if config.Database.Server == mySQL {
-		query = `SELECT 	COLUMN_NAME, 
-						COLUMN_KEY, 
-						DATA_TYPE, 
-						IS_NULLABLE 
-			FROM 		INFORMATION_SCHEMA.COLUMNS 
-			WHERE 		TABLE_SCHEMA = ? 
-			AND 		TABLE_NAME = ?`
-	} else if config.Database.Server == msSQL {
-		query = `		
-				SELECT Col.COLUMN_NAME, Tab.CONSTRAINT_TYPE, c.DATA_TYPE, c.IS_NULLABLE   from 
-				INFORMATION_SCHEMA.TABLE_CONSTRAINTS Tab, 
-				INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE Col,
-				INFORMATION_SCHEMA.COLUMNS c
-				WHERE 
-				Col.Constraint_Name = Tab.Constraint_Name
-				AND col.COLUMN_NAME = c.COLUMN_NAME
-				AND Col.Table_Name = Tab.Table_Name
-				AND c.TABLE_CATALOG = ? 
-				AND Col.Table_Name = ?
-		`
-	}
-	rows, err := db.Query(query, database, table)
-	if err != nil {
-		fmt.Println("Error selecting from db: " + err.Error())
-		return "", nil
-	}
-	if rows != nil {
-		defer rows.Close()
-	} else {
-		return "", nil
-	}
-	queries := []Query{}
-	structName := helper.SnakeCaseToCamelCase(helper.Singular(table), true)
-	strStuct := "package model "
-	strStuct = "\n// " + structName + " : "
-	strStuct += "\ntype " + structName + " struct {\n"
-	for rows.Next() {
-		var colname string
-		var colKey string
-		var colType string
-		var nullable string
-		rows.Scan(&colname, &colKey, &colType, &nullable)
-		field := helper.SnakeCaseToCamelCase(colname, true)
-		field = helper.BeautySingularity(field)
-		colType = stringifyType(colType)
-		if colname == "id" {
-			field = "ID"
-		} else {
-			if colType == "string" {
-				queries = append(queries, Query{
-					Key:   colname,
-					Value: fake.FirstName(),
-				})
-			} else {
-				queries = append(queries, Query{
-					Key:   colname,
-					Value: fake.DigitsN(2),
-				})
-			}
-		}
-		if colKey == "PRI" {
-			strStuct += fmt.Sprintf("\n\t %s %s `gorm:\"column:%s;primary_key\" form:\"%s;primary_key\" json:\"%s,omitempty;primary_key\" bson:\"%s\" query:\"%s\" form:\"%s\" xml:\"%s\"`", field, colType, colname, colname, colname, colname, colname, colname, colname)
-		} else {
-			strStuct += fmt.Sprintf("\n\t %s %s `gorm:\"column:%s\" form:\"%s\" json:\"%s,omitempty\"` bson:\"%s\" query:\"%s\" form:\"%s\" xml:\"%s\"", field, colType, colname, colname, colname, colname, colname, colname, colname)
-
-		}
-	}
-	strStuct += "\n}"
-	strStuct += createFunctionName(structName, table)
-	return strStuct, queries
-}
-
 func createFunctionName(strucName, tablename string) string {
 	return fmt.Sprintf("\n// TableName : \nfunc (*%s) TableName() string {"+
 		"\nreturn \"%s\""+
@@ -231,11 +142,11 @@ func stringifyType(colType string) string {
 		return "uint16"
 	case "bigint":
 		return "uint64"
-	case "char", "enum", "varchar", "longtext", "mediumtext", "text", "tinytext":
+	case "char", "enum", "varchar", "nvarchar", "longtext", "mediumtext", "text", "tinytext":
 		return "string"
 	case "date", "datetime", "time", "timestamp":
 		return "*time.Time"
-	case "decimal", "double":
+	case "decimal", "double", "numeric":
 		return "float64"
 	case "float":
 		return "float32"
