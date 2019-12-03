@@ -15,7 +15,10 @@ type API struct {
 }
 
 func createAPI(tablename, modelname, objectname, urlstring string) string {
-	strtemplate := `
+	var strtemplate string
+	if config.Database.Server == mySQL {
+
+		strtemplate = `
 	package handlers
 
 	// InitRouters{{.Modelname}} : 
@@ -78,6 +81,70 @@ func createAPI(tablename, modelname, objectname, urlstring string) string {
 	}
 	
 	`
+	} else if config.Database.Server == msSQL {
+
+		strtemplate = `
+			package handlers
+			// InitRouters{{.Modelname}} : 
+			func (h *Handler) InitRouters{{.Modelname}}(r *gin.RouterGroup, {{.Objectname}} string) {
+				route := r.Group("/" + {{.Objectname}})
+				route.GET("", h.get{{.Modelname}}s)
+				route.GET("/", h.get{{.Modelname}}s)
+				route.GET("/:id", h.get{{.Modelname}})
+				route.POST("", h.create{{.Modelname}})
+				route.POST("/", h.create{{.Modelname}})
+				route.PUT("/:id", h.update{{.Modelname}})
+				route.DELETE("/:id", h.delete{{.Modelname}})
+			}
+			
+			func (h *Handler) get{{.Modelname}}s(c *gin.Context) {
+				var {{.Objectname}}s []models.{{.Modelname}}
+				if err := h.db.Find(&{{.Objectname}}s).Error; err != nil {
+					c.AbortWithStatus(404)
+					fmt.Println(err)
+				} else {
+					c.JSON(200, {{.Objectname}}s)
+				}
+			}
+			
+			func (h *Handler) get{{.Modelname}}(c *gin.Context) {
+				id := c.Params.ByName("id")
+				var {{.Objectname}} models.{{.Modelname}}
+				if err := h.db.Where("id = ?", id).Find(&{{.Objectname}}).Error; err != nil {
+					c.AbortWithStatus(404)
+					fmt.Println(err)
+				} else {
+					c.JSON(200, {{.Objectname}})
+				}
+			}
+			
+			func (h *Handler) create{{.Modelname}}(c *gin.Context) {
+				var {{.Objectname}} models.{{.Modelname}}
+				c.BindJSON(&{{.Objectname}})
+				h.db.Create(&{{.Objectname}})
+				c.JSON(200, {{.Objectname}})
+			}
+			
+			func (h *Handler) update{{.Modelname}}(c *gin.Context) {
+				var {{.Objectname}} models.{{.Modelname}}
+				id := c.Params.ByName("id")
+				if err := h.db.Where("id = ?", id).Find(&{{.Objectname}}).Error; err != nil {
+					c.AbortWithStatus(404)
+					fmt.Println(err)
+				}
+				c.BindJSON(&{{.Objectname}})
+				h.db.Save(&{{.Objectname}})
+				c.JSON(200, {{.Objectname}})
+			}
+			func (h *Handler) delete{{.Modelname}}(c *gin.Context) {
+				id := c.Params.ByName("id")
+				var {{.Objectname}} models.{{.Modelname}}
+				d := h.db.Where("id = ?", id).Delete(&{{.Objectname}})
+				fmt.Println(d)
+				c.JSON(200, gin.H{"id #" + id: "deleted"})
+			}`
+
+	}
 	tmpl := template.New("create api template")
 	tmpl, err := tmpl.Parse(strtemplate)
 	if err != nil {

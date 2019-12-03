@@ -13,4 +13,5 @@ type Database struct {
 	User     string `json:"username"`
 	Password string `json:"password"`
 	DBName   string `json:"dbname"`
+	Server   string `json:"server"`
 }

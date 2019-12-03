@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -65,18 +66,70 @@ func createDir() {
 	// config.Package
 }
 func connect() {
+	if config.Database.Server == "mysql" {
+		connectMYSQL()
+	} else if config.Database.Server == "mssql" {
+		connectMSSQL()
+	} else {
+		panic("server tidak dikenali")
+	}
+	fmt.Println("berhasil connect")
+}
+func connectMYSQL() {
 	c := config.Database
 	var err error
-	constring := c.User + ":" + c.Password + "@tcp(" + c.Host + ":" + c.Port + ")/" + c.DBName + "?&parseTime=True"
+	var constring string
+
+	constring = c.User + ":" + c.Password + "@tcp(" + c.Host + ":" + c.Port + ")/" + c.DBName + "?&parseTime=True"
 	db, err = sql.Open("mysql", constring)
+
+	if err != nil {
+		panic(err.Error)
+	}
+	fmt.Println("berhasil connect")
+}
+func connectMSSQL() {
+	c := config.Database
+	var err error
+	port, _ := strconv.Atoi(c.Port)
+	connectionString := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%d;database=%s",
+		c.Host, c.User, c.Password, port, c.DBName)
+	fmt.Println(connectionString)
+	db, err = sql.Open("mssql", connectionString)
 	if err != nil {
 		panic(err.Error)
 	}
 }
+
+// c := config.Database
+// var err error
+// // constring := c.User + ":" + c.Password + "@tcp(" + c.Host + ":" + c.Port + ")/" + c.DBName + "?&parseTime=True"
+// port, _ := strconv.Atoi(c.Port)
+// connectionString := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%d;database=%s",
+// 	c.Host, c.User, c.Password, port, c.DBName)
+// fmt.Println(connectionString)
+// db, err = sql.Open("mssql", connectionString)
+// if err != nil {
+// 	panic(err.Error)
+// }
+
+const mySQL = "mysql"
+const msSQL = "mssql"
+
 func getAllTablename() []string {
 
 	tables := []string{}
-	res, err := db.Query("SHOW TABLES")
+	var query string
+	if config.Database.Server == msSQL {
+		query = `
+		SELECT	TABLE_NAME
+		  FROM	INFORMATION_SCHEMA.TABLES;
+		  `
+	} else if config.Database.Server == mySQL {
+		query = "SHOW TABLES"
+	}
+
+	res, err := db.Query(query)
 
 	if err != nil {
 		fmt.Println(err)
@@ -92,13 +145,29 @@ func getAllTablename() []string {
 }
 
 func createStruct(database, table string) (string, []Query) {
-	query := `SELECT 	COLUMN_NAME, 
+	var query string
+	if config.Database.Server == mySQL {
+		query = `SELECT 	COLUMN_NAME, 
 						COLUMN_KEY, 
 						DATA_TYPE, 
 						IS_NULLABLE 
 			FROM 		INFORMATION_SCHEMA.COLUMNS 
 			WHERE 		TABLE_SCHEMA = ? 
 			AND 		TABLE_NAME = ?`
+	} else if config.Database.Server == msSQL {
+		query = `		
+				SELECT Col.COLUMN_NAME, Tab.CONSTRAINT_TYPE, c.DATA_TYPE, c.IS_NULLABLE   from 
+				INFORMATION_SCHEMA.TABLE_CONSTRAINTS Tab, 
+				INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE Col,
+				INFORMATION_SCHEMA.COLUMNS c
+				WHERE 
+				Col.Constraint_Name = Tab.Constraint_Name
+				AND col.COLUMN_NAME = c.COLUMN_NAME
+				AND Col.Table_Name = Tab.Table_Name
+				AND c.TABLE_CATALOG = ? 
+				AND Col.Table_Name = ?
+		`
+	}
 	rows, err := db.Query(query, database, table)
 	if err != nil {
 		fmt.Println("Error selecting from db: " + err.Error())

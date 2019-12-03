@@ -4,7 +4,10 @@
         "port": "3306",
         "dbname":"dbname",
         "username":"root",
-        "password":"toor"
+        "password":"toor",
+        "server":"mysql"
     },
-    "package":"github.com/sabily-api/apiapi"
+    "package":"github.com/yourrepo/mantappo",
+    "message": "// Dangers! this will replace your code with generated code. // make sure you happy. :-D "
+    
 }
