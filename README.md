@@ -5,10 +5,7 @@ We use gin, gorm, dailyhelper and postman.
 
 ## How to use
 
-  1. clone this project
-  2. copy paste config-example.json to config.json.
-  3. edit config.json
-  4. install dependencies
-  5. create an out dir
-  6. run it!
-  7. you will have an api application
+  1. `go get github.com/shouva/apicreator`
+  2. create config.json, look at config-example.json
+  3. run it : `apicreator`
+  
