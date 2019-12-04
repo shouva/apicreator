@@ -26,7 +26,7 @@ func createMain() string {
 				var config Config
 				dailyhelper.ReadConfig(dailyhelper.GetCurrentPath(false)+"/config.json", &config)
 				cDB := config.Database
-				db, _ := database.New(cDB.Host, cDB.Port, cDB.DBName, cDB.User, cDB.Password)
+				db, _ := database.New(cDB.Host, cDB.Port, cDB.User, cDB.Password, cDB.DBName)
 			
 				handler := handlers.NewHandler(db)
 			
@@ -63,7 +63,7 @@ func createMain() string {
 				var config Config
 				dailyhelper.ReadConfig(dailyhelper.GetCurrentPath(false)+"/config.json", &config)
 				cDB := config.Database
-				db, _ := database.New(cDB.Host, cDB.Port, cDB.DBName, cDB.User, cDB.Password)
+				db, _ := database.New(cDB.Host, cDB.Port, cDB.User, cDB.Password, cDB.DBName)
 			
 				handler := handlers.NewHandler(db)
 			

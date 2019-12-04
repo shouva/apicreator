@@ -70,7 +70,7 @@ func createCon() string {
 				portNumber, _ := strconv.Atoi(port)
 				connectionString := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%d;database=%s",
 								host, username, password, portNumber, dbname)
-				_db, err := gorm.Open("mysql", connectionString)
+				_db, err := gorm.Open("mssql", connectionString)
 				if err != nil {
 					return &Con{}, err
 				}
